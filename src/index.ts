@@ -1,17 +1,18 @@
-const fs = require('fs');
-const path = require('path');
-const MagicString = require( 'magic-string' );
+const fs: any = require('fs');
+const path: any = require('path');
 
-export default function bundleInject(options = {}) {
+interface Options {
+  target?: string,
+}
+
+export default function bundleInject(options: Options): object {
   console.log(options);
-  console.log(MagicString)
-  let { target, dist } = options
+  let target: string = options.target
   target = path.resolve(__dirname, target)
-  dist = path.resolve(__dirname, dist)
 
   return {
-    name: "bundle-inject",
-    generateBundle(options = {}, bundle = {}) {
+    name: "rollup-plugin-bundle-inject",
+    generateBundle(options: object = {}, bundle: object = {}) {
       if (fs.statSync(target)) {
         let code = fs.readFileSync(target, { encoding: 'utf-8' })
         Object.keys(bundle).forEach(bundleName => {
