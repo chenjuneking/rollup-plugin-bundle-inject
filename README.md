@@ -1,3 +1,11 @@
+[npm]: https://img.shields.io/npm/v/rollup-plugin-bundle-inject
+[npm-url]: https://www.npmjs.com/package/rollup-plugin-bundle-inject
+[size]: https://packagephobia.now.sh/badge?p=rollup-plugin-bundle-inject
+[size-url]: https://packagephobia.now.sh/result?p=rollup-plugin-bundle-inject
+
+[![npm][npm]][npm-url]
+[![size][size]][size-url]
+
 # rollup-plugin-bundle-inject
 
 🍣 Inject JS or CSS bundle into a template where necessary
