@@ -6,7 +6,7 @@
 
 Using npm:
 
-```console
+```bash
 npm install rollup-plugin-bundle-inject --save-dev
 ```
 
@@ -43,7 +43,7 @@ Default: `''`
 
 Specifies the template.
 
-_Note: This field is required, it will throw an error if you don't specify a valid value.
+\_Note: This field is required, it will throw an error if you don't specify a valid value.
 
 ## Example
 
@@ -68,7 +68,7 @@ By default, CSS bundle will inject into the end of the `<head>`, JS bundle will 
 </html>
 ```
 
-Or you could decide where should the bundle be injected, by using the tag `<!-- inject:css -->` and `<!-- inject:js -->`.
+you could decide where should be the bundle injected, by using the tag `<!-- inject:css -->` and `<!-- inject:js -->`.
 
 ```html
 <!DOCTYPE html>
