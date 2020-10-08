@@ -1,9 +1,5 @@
 import { InjectTag } from "../constants";
-
-interface BundleList {
-  cssList: Array<string>;
-  jsList: Array<string>;
-}
+import { OutputAsset, OutputBundle, OutputChunk } from "../types/rollup";
 
 export const isExist = (type: string, code: string): boolean => {
   switch (type) {
@@ -25,14 +21,15 @@ export const isExist = (type: string, code: string): boolean => {
   }
 };
 
-export const getListFromBundle = (bundle: object): BundleList => {
-  const cssList: Array<string> = [];
+export const getListFromBundle = (bundle: OutputBundle): BundleList => {
+  const cssList: Array<string | Uint8Array> = [];
   const jsList: Array<string> = [];
   for (let key in bundle) {
-    if (/\.css$/.test(key)) {
-      cssList.push(bundle[key].source);
-    } else if (/\.js$/.test(key)) {
-      jsList.push(bundle[key].code);
+    let value: OutputAsset | OutputChunk = bundle[key];
+    if (/\.css$/.test(key) && "source" in value) {
+      cssList.push(value.source);
+    } else if (/\.js$/.test(key) && "code" in value) {
+      jsList.push(value.code);
     }
   }
   return { cssList, jsList };

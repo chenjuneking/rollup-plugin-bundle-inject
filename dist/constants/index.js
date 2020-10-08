@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.InjectTag=void 0;var InjectTag=function(){function e(){}return e.CSS=/<!--\s*inject:\s*css\s*-->/g,e.JS=/<!--\s*inject:\s*js\s*-->/g,e.HEAD_TAG=/<\/head>/g,e.BODY_TAG=/<\/body>/g,e}();exports.InjectTag=InjectTag;

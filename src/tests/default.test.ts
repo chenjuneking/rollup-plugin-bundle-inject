@@ -1,50 +1,106 @@
-var path = require("path");
-var { expect } = require("chai");
-var { rollup } = require("rollup");
-var { terser } = require("rollup-plugin-terser");
-var bundleInject = require("../dist/rollup-plugin-bundle-inject.cjs.js");
-var { getOutputFromGenerated } = require("./helper/utils");
+const path = require("path");
+const { expect } = require("chai");
+const { rollup } = require("rollup");
+const { terser } = require("rollup-plugin-terser");
+const postcss = require("rollup-plugin-postcss");
+import { InjectTag } from "../constants";
+import {
+  OutputAsset,
+  OutputChunk,
+  RollupBuild,
+  RollupOutput,
+} from "../types/rollup";
+const bundleInject = require("../../dist/index");
 
-var input = "main.js";
-var htmlPath = path.resolve(__dirname, "./fixtures/default.html");
-var htmlFileName = path.basename(htmlPath);
-var jsCode =
-  "const a = 1; const b = 2; function sum(a, b) { return a + b; }; console.log(sum(a, b));";
+const input: string = "main.js";
+const htmlPath: string = path.resolve(__dirname, "./fixtures/default.html");
+const htmlFileName: string = path.basename(htmlPath);
+const jsCode: string =
+  'import "./style.css"; const a = 1; const b = 2; function sum(a, b) { return a + b; }; console.log(sum(a, b));';
+const cssCode: string =
+  '*{padding:0;margin:0;}body{font-size:12px;font-family:"Arial";}ul{list-style:none;}';
+const cssBundleName: string = "bundle.css";
+
+let bundle: RollupBuild;
+let generated: RollupOutput;
+let output: [OutputChunk, ...(OutputChunk | OutputAsset)[]];
 
 describe("test: default", () => {
-  it("css bundle should be injected into the end of the <head> tag by default", async () => {});
-
-  it("js bundle should be injected into the end of the <body> tag by default", async () => {
-    const bundle = await rollup({
+  beforeEach(async () => {
+    bundle = await rollup({
       input,
       plugins: [
+        terser(),
+        postcss({
+          extract: true,
+        }),
+        {
+          name: "fake-plugin",
+          resolveId(source: string) {
+            return source;
+          },
+          load(id: string) {
+            if (id === "./style.css") {
+              this.emitFile({
+                type: "asset",
+                fileName: cssBundleName,
+                source: cssCode,
+              });
+              return cssCode;
+            }
+            if (id === "main.js") return jsCode;
+            return null;
+          },
+        },
         bundleInject({
           target: htmlPath,
         }),
-        terser(),
-        {
-          name: "fake-plugin",
-          resolveId(id) {
-            return id;
-          },
-          load(importee) {
-            if (importee === "main.js") return jsCode;
-          },
-        },
       ],
     });
+    generated = await bundle.generate({ format: "es" });
+    output = generated.output;
+  });
 
-    const generated = await bundle.generate({ format: "es" });
-    const { output } = generated;
-    console.log(222, output);
-    let bundleCode, htmlSource;
+  it("css bundle should be injected into the end of the <head> tag by default", async () => {
+    let cssBundle: string | Uint8Array = "",
+      htmlBundle: string | Uint8Array = "";
     for (let i = 0; i < output.length; i++) {
-      if (output[i].fileName === input) {
-        bundleCode = output[i].code;
-      } else if (output[i].fileName === htmlFileName) {
-        htmlSource = output[i].source;
+      let item: OutputChunk | OutputAsset = output[i];
+      if (item.fileName === cssBundleName && "source" in item) {
+        cssBundle = item.source;
+      } else if (item.fileName === htmlFileName && "source" in item) {
+        htmlBundle = item.source;
       }
     }
-    expect(htmlSource).to.include("<script>" + bundleCode + "</script>");
+    cssBundle =
+      typeof cssBundle === "string"
+        ? cssBundle.trim()
+        : new TextDecoder("utf-8").decode(cssBundle).trim();
+    htmlBundle =
+      typeof htmlBundle === "string"
+        ? htmlBundle
+        : new TextDecoder("utf-8").decode(htmlBundle);
+    expect(htmlBundle.match(InjectTag.HEAD_TAG)).to.have.lengthOf(1);
+    expect(htmlBundle).to.include("<style>" + cssBundle + "</style></head>");
+  });
+
+  it("js bundle should be injected into the end of the <body> tag by default", async () => {
+    let jsBundle: string = "",
+      htmlBundle: string | Uint8Array = "";
+    for (let i = 0; i < output.length; i++) {
+      let item: OutputChunk | OutputAsset = output[i];
+      if (item.fileName === input && "code" in item) {
+        jsBundle = item.code;
+      } else if (item.fileName === htmlFileName && "source" in item) {
+        htmlBundle = item.source;
+      }
+    }
+    jsBundle = jsBundle.trim();
+    htmlBundle =
+      typeof htmlBundle === "string"
+        ? htmlBundle
+        : new TextDecoder("utf-8").decode(htmlBundle);
+    expect(htmlBundle.match(InjectTag.BODY_TAG)).to.have.lengthOf(1);
+    expect(htmlBundle).to.include("<script>" + jsBundle + "</script></body>");
   });
 });

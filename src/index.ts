@@ -3,12 +3,7 @@ import * as path from "path";
 import { minify } from "html-minifier";
 import { isExist, getListFromBundle } from "./utils";
 import { InjectTag } from "./constants";
-
-// const fs: any = require("fs");
-// const path: any = require("path");
-// const minify: any = require("html-minifier").minify;
-// const { isExist, getListFromBundle } = require("./utils");
-// const { InjectTag } = require("./constants");
+import { OutputBundle } from "./types/rollup";
 
 interface Options {
   target?: string;
@@ -22,13 +17,14 @@ const replace = (
   return source.replace(pattern, replacement);
 };
 
-export default function bundleInject(options: Options): object {
-  const target: string = options.target;
+const bundleInject = function (options: Options): object {
+  const target: string | undefined = options.target;
+  if (!target) throw new Error(`options.target cannot be empty`);
   const fileName: string = path.basename(target);
 
   return {
     name: "rollup-plugin-bundle-inject",
-    generateBundle(options: object = {}, bundle: object = {}) {
+    generateBundle(options: object = {}, bundle: OutputBundle = {}) {
       // found the target html
       if (fs.statSync(target)) {
         // read the html code
@@ -37,12 +33,13 @@ export default function bundleInject(options: Options): object {
         const isExistInjectCSSTag: boolean = isExist("inject:css", code);
         const isExistInjectJSTag: boolean = isExist("inject:js", code);
         let pattern: RegExp;
-        let replacement: string;
+        let replacement: string | Uint8Array;
         if (isExistInjectCSSTag) {
           // if exist css tag
           pattern = InjectTag.CSS;
           replacement = cssList.reduce(
-            (acc, source) => `${acc}<style>${source}</style>`,
+            (acc: string, source: string | Uint8Array) =>
+              `${acc}<style>${source}</style>`,
             ""
           );
           code = replace(code, pattern, replacement);
@@ -51,7 +48,7 @@ export default function bundleInject(options: Options): object {
           // else if exist js tag
           pattern = InjectTag.JS;
           replacement = jsList.reduce(
-            (acc, source) => `${acc}<script>${source}</script>`,
+            (acc: string, source: string) => `${acc}<script>${source}</script>`,
             ""
           );
           code = replace(code, pattern, replacement);
@@ -59,15 +56,19 @@ export default function bundleInject(options: Options): object {
         if (!isExistInjectCSSTag && !isExistInjectJSTag) {
           // else default insert into the end of the head / body tag
           const headPattern: RegExp = InjectTag.HEAD_TAG;
-          const headReplacement: string = cssList.reduce(
-            (acc, source) => `${acc}<style>${source}</style></head>`,
-            ""
-          );
+          const headReplacement: string =
+            cssList.reduce(
+              (acc: string, source: string | Uint8Array) =>
+                `${acc}<style>${source}</style>`,
+              ""
+            ) + "</head>";
           const bodyPattern: RegExp = InjectTag.BODY_TAG;
-          const bodyReplacement: string = jsList.reduce(
-            (acc, source) => `${acc}<style>${source}</style></body>`,
-            ""
-          );
+          const bodyReplacement: string =
+            jsList.reduce(
+              (acc: string, source: string) =>
+                `${acc}<script>${source}</script>`,
+              ""
+            ) + "</body>";
           code = replace(code, headPattern, headReplacement);
           code = replace(code, bodyPattern, bodyReplacement);
         }
@@ -90,6 +91,6 @@ export default function bundleInject(options: Options): object {
       }
     },
   };
-}
+};
 
-// module.exports = bundleInject;
+module.exports = bundleInject;
