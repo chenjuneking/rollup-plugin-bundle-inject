@@ -18,7 +18,7 @@
     "rollup bundle",
     "bundle inject"
   ],
-  "author": "Jackie Chen <342115615@qq.com>",
+  "author": "Jacket Chen <342115615@qq.com>",
   "license": "ISC",
   "dependencies": {
     "html-minifier": "^4.0.0"
