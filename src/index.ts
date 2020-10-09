@@ -7,6 +7,7 @@ import { OutputBundle } from "./types/rollup";
 
 interface Options {
   target?: string;
+  rename?: string;
 }
 
 const replace = (
@@ -20,7 +21,7 @@ const replace = (
 const bundleInject = function (options: Options): object {
   const target: string | undefined = options.target;
   if (!target) throw new Error(`options.target cannot be empty`);
-  const fileName: string = path.basename(target);
+  const fileName: string = options.rename || path.basename(target);
 
   return {
     name: "rollup-plugin-bundle-inject",

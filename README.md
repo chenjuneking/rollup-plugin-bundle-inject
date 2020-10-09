@@ -53,6 +53,13 @@ Specifies the template.
 
 \_Note: This field is required, it will throw an error if you don't specify a valid value.
 
+### `rename`
+
+Type: `String`<br>
+Default: `''`
+
+Rename the output template.
+
 ## Example
 
 By default, CSS bundle will inject into the end of the `<head>`, JS bundle will inject into the end of the `<body>`.

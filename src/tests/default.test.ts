@@ -1,7 +1,6 @@
 const path = require("path");
 const { expect } = require("chai");
 const { rollup } = require("rollup");
-const { terser } = require("rollup-plugin-terser");
 const postcss = require("rollup-plugin-postcss");
 import { InjectTag } from "../constants";
 import {
@@ -30,7 +29,6 @@ describe("test: default", () => {
     bundle = await rollup({
       input,
       plugins: [
-        terser(),
         postcss({
           extract: true,
         }),
