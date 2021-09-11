@@ -20,8 +20,8 @@ const cssCode: string =
   '*{padding:0;margin:0;}body{font-size:12px;font-family:"Arial";}ul{list-style:none;}';
 const cssBundleName: string = "bundle.css";
 
-describe("test: cssTag", () => {
-  it("js bundle should be injected into the position where the <!-- inject:css --> tag exists", async () => {
+describe("test: jsTag", () => {
+  it("js bundle should be injected into the position where the <!-- inject:js --> tag exists", async () => {
     const bundle: RollupBuild = await rollup({
       input,
       plugins: [

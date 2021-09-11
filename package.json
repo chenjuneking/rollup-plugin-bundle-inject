@@ -3,7 +3,11 @@
   "version": "1.0.2",
   "description": "Inject JS or CSS bundle into a template where necessary",
   "main": "dist/index.js",
-  "files": ["README.md", "package.json", "dist/"],
+  "files": [
+    "README.md",
+    "package.json",
+    "dist/"
+  ],
   "scripts": {
     "start": "tsc --watch",
     "build": "sh bin/build.sh",
@@ -26,6 +30,7 @@
   },
   "devDependencies": {
     "@types/chai": "^4.2.12",
+    "@types/html-minifier": "^4.0.1",
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.11.2",
     "chai": "^4.2.0",

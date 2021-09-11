@@ -3,7 +3,6 @@ const { expect } = require("chai");
 const { rollup } = require("rollup");
 const postcss = require("rollup-plugin-postcss");
 import { minify } from "html-minifier";
-import { InjectTag } from "../constants";
 import {
   OutputAsset,
   OutputChunk,
@@ -25,7 +24,7 @@ let bundle: RollupBuild;
 let generated: RollupOutput;
 let output: [OutputChunk, ...(OutputChunk | OutputAsset)[]];
 
-describe("test: default", () => {
+describe("test: minifierDisabled", () => {
   beforeEach(async () => {
     bundle = await rollup({
       input,
@@ -53,6 +52,7 @@ describe("test: default", () => {
         },
         bundleInject({
           target: htmlPath,
+          minify: false,
         }),
       ],
     });
@@ -60,50 +60,7 @@ describe("test: default", () => {
     output = generated.output;
   });
 
-  it("css bundle should be injected into the end of the <head> tag by default", async () => {
-    let cssBundle: string | Uint8Array = "",
-      htmlBundle: string | Uint8Array = "";
-    for (let i = 0; i < output.length; i++) {
-      let item: OutputChunk | OutputAsset = output[i];
-      if (item.fileName === cssBundleName && "source" in item) {
-        cssBundle = item.source;
-      } else if (item.fileName === htmlFileName && "source" in item) {
-        htmlBundle = item.source;
-      }
-    }
-    cssBundle =
-      typeof cssBundle === "string"
-        ? cssBundle.trim()
-        : new TextDecoder("utf-8").decode(cssBundle).trim();
-    htmlBundle =
-      typeof htmlBundle === "string"
-        ? htmlBundle
-        : new TextDecoder("utf-8").decode(htmlBundle);
-    expect(htmlBundle.match(InjectTag.HEAD_TAG)).to.have.lengthOf(1);
-    expect(htmlBundle).to.include("<style>" + cssBundle + "</style></head>");
-  });
-
-  it("js bundle should be injected into the end of the <body> tag by default", async () => {
-    let jsBundle: string = "",
-      htmlBundle: string | Uint8Array = "";
-    for (let i = 0; i < output.length; i++) {
-      let item: OutputChunk | OutputAsset = output[i];
-      if (item.fileName === input && "code" in item) {
-        jsBundle = item.code;
-      } else if (item.fileName === htmlFileName && "source" in item) {
-        htmlBundle = item.source;
-      }
-    }
-    jsBundle = jsBundle.trim();
-    htmlBundle =
-      typeof htmlBundle === "string"
-        ? htmlBundle
-        : new TextDecoder("utf-8").decode(htmlBundle);
-    expect(htmlBundle.match(InjectTag.BODY_TAG)).to.have.lengthOf(1);
-    expect(htmlBundle).to.include("<script>" + jsBundle + "</script></body>");
-  });
-
-  it("html bundle should be minified", async () => {
+  it("html bundle should not be minified", async () => {
     let htmlBundle: string | Uint8Array = "";
     for (let i = 0; i < output.length; i++) {
       let item: OutputChunk | OutputAsset = output[i];
@@ -115,7 +72,7 @@ describe("test: default", () => {
       typeof htmlBundle === "string"
         ? htmlBundle
         : new TextDecoder("utf-8").decode(htmlBundle);
-    expect(htmlBundle).to.equal(
+    expect(htmlBundle).to.not.equal(
       minify(htmlBundle, {
         removeComments: true,
         collapseWhitespace: true,
