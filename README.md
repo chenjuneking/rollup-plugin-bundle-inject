@@ -60,6 +60,33 @@ Default: `''`
 
 Rename the output template.
 
+### `minify`
+
+Type: `Boolean`<br>
+Default: `true`
+
+Minify the output html bundle.
+
+### `minifierOptions`
+
+Type: `html-minifier.Options` ([See options here](https://github.com/kangax/html-minifier#options-quick-reference))<br>
+Defaults:
+
+```js
+{
+  removeComments: true,
+  collapseWhitespace: true,
+  collapseBooleanAttributes: true,
+  removeAttributeQuotes: true,
+  removeRedundantAttributes: true,
+  useShortDoctype: true,
+  removeEmptyAttributes: true,
+  removeEmptyElements: true,
+}
+```
+
+Options to use for `html-minifier`.
+
 ## Example
 
 By default, CSS bundle will inject into the end of the `<head>`, JS bundle will inject into the end of the `<body>`.

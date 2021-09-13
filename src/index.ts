@@ -1,13 +1,15 @@
 import * as fs from "fs";
 import * as path from "path";
-import { minify } from "html-minifier";
+import { minify, Options as MinifyOptions } from "html-minifier";
 import { isExist, getListFromBundle } from "./utils";
 import { InjectTag } from "./constants";
-import { OutputBundle } from "./types/rollup";
+import { OutputOptions, OutputBundle } from "./types/rollup";
 
 interface Options {
   target?: string;
   rename?: string;
+  minify?: boolean;
+  minifierOptions?: MinifyOptions;
 }
 
 const replace = (
@@ -25,7 +27,10 @@ const bundleInject = function (options: Options): object {
 
   return {
     name: "rollup-plugin-bundle-inject",
-    generateBundle(options: object = {}, bundle: OutputBundle = {}) {
+    generateBundle(
+      outputOptions: OutputOptions = {},
+      bundle: OutputBundle = {}
+    ) {
       // found the target html
       if (fs.statSync(target)) {
         // read the html code
@@ -73,17 +78,24 @@ const bundleInject = function (options: Options): object {
           code = replace(code, headPattern, headReplacement);
           code = replace(code, bodyPattern, bodyReplacement);
         }
-        code = minify(code, {
-          removeComments: true,
-          removeCommentsFromCDATA: true,
-          collapseWhitespace: true,
-          collapseBooleanAttributes: true,
-          removeAttributeQuotes: true,
-          removeRedundantAttributes: true,
-          useShortDoctype: true,
-          removeEmptyAttributes: true,
-          removeEmptyElements: true,
-        });
+        if (options.minify !== false) {
+          const minifierOptions = {
+            removeComments: true,
+            collapseWhitespace: true,
+            collapseBooleanAttributes: true,
+            removeAttributeQuotes: true,
+            removeRedundantAttributes: true,
+            useShortDoctype: true,
+            removeEmptyAttributes: true,
+            removeEmptyElements: true,
+          };
+
+          if (options.minifierOptions)
+            Object.assign(minifierOptions, options.minifierOptions);
+
+          code = minify(code, minifierOptions);
+        }
+
         this.emitFile({
           type: "asset",
           fileName,

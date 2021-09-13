@@ -21,7 +21,7 @@ const cssCode: string =
 const cssBundleName: string = "bundle.css";
 
 describe("test: options.rename", () => {
-  it("rename should working", async () => {
+  it("rename should be working", async () => {
     const bundle: RollupBuild = await rollup({
       input,
       plugins: [
@@ -53,9 +53,14 @@ describe("test: options.rename", () => {
       ],
     });
     const generated: RollupOutput = await bundle.generate({ format: "es" });
-    const output: [OutputChunk, ...(OutputChunk | OutputAsset)[]] = generated.output;
-    const existRenamedHTML: boolean = output.some(o => o.fileName === htmlRename);
-    const existOriginalHTML: boolean = output.some(o => o.fileName === htmlFileName);
+    const output: [OutputChunk, ...(OutputChunk | OutputAsset)[]] =
+      generated.output;
+    const existRenamedHTML: boolean = output.some(
+      (o) => o.fileName === htmlRename
+    );
+    const existOriginalHTML: boolean = output.some(
+      (o) => o.fileName === htmlFileName
+    );
     expect(existRenamedHTML).to.be.true;
     expect(existOriginalHTML).to.be.false;
   });
